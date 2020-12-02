@@ -12,6 +12,7 @@ namespace HGG_AdventsKalender_2020
         static void Main(string[] args)
         {
 
+            ServicePointManager.DefaultConnectionLimit = 1000;
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
 
             Console.WriteLine("Start ...");
