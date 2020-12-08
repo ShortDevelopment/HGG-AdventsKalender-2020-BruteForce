@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace HGG_AdventsKalender_2020
 {
@@ -33,6 +34,9 @@ namespace HGG_AdventsKalender_2020
             Application.Run();
             
         }
+
+        static Dispatcher CurrentDispatcher = Dispatcher.CurrentDispatcher;
+
         static void MakeRequest1(string url)
         {
             var req = HttpWebRequest.Create(url);
@@ -43,11 +47,40 @@ namespace HGG_AdventsKalender_2020
                 {
                     using (HttpWebResponse resp = (HttpWebResponse)req.EndGetResponse(state))
                     {
-                        if (resp.StatusCode == HttpStatusCode.OK)
+                        CurrentDispatcher.Invoke(() =>
                         {
-                            Console.WriteLine(resp.ResponseUri.ToString());
-                        }
+                            var currentURL = resp.ResponseUri.ToString();
+                            Console.Write(currentURL);
+                            for (int i = 0; i <= 100 - currentURL.Length; i++)
+                            {
+                                Console.Write(" ");
+                            }
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine(resp.StatusCode.ToString());
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        });                        
                     }
+                }
+                catch (WebException ex)
+                {
+                    if(ex.Response != null)
+                    {
+                        using (HttpWebResponse resp = (HttpWebResponse)ex.Response)
+                        {
+                            CurrentDispatcher.Invoke(() =>
+                            {
+                                var currentURL = resp.ResponseUri.ToString();
+                                Console.Write(currentURL);
+                                for (int i = 0; i <= 100 - currentURL.Length; i++)
+                                {
+                                    Console.Write(" ");
+                                }
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.WriteLine(resp.StatusCode.ToString());
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                            });
+                        }
+                    }                    
                 }
                 catch (Exception)
                 {
